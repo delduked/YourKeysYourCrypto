@@ -14,8 +14,8 @@ This command-line tool, written in Go, is designed for encrypting and decrypting
 Clone the repository containing the Go code:
 
 ```bash
-git clone [https://github.com/delduked/YourKeysYourCrypto.git]
-cd [YourKeysYourCrypto]
+git clone https://github.com/delduked/YourKeysYourCrypto.git
+cd YourKeysYourCrypto
 ```
 
 ## Usage
