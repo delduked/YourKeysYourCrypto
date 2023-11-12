@@ -1,0 +1,70 @@
+name: Go Build and Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-release:
+    runs-on: [self-hosted, home, docker]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.20'
+
+    - name: Build MacOS binary
+      env:
+        GOOS: darwin
+        GOARCH: amd64
+      run: go build -o edck
+
+    - name: Build Windows binary
+      env:
+        GOOS: windows
+        GOARCH: amd64
+      run: go build -o edck.exe
+
+    - name: Calculate next release tag
+      id: create_tag
+      run: |
+        VERSION=$(git rev-parse --short HEAD)
+        DATE=$(date +'%Y%m%d')
+        VVERSION=${DATE}v_${VERSION}
+        echo "tag=v_${VERSION}" >> $GITHUB_OUTPUT
+        echo "tagname=${VVERSION}" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.YOURKEYSYOURCRYPTO }}
+      with:
+        tag_name: ${{ steps.create_tag.outputs.tag }}
+        release_name: ${{ steps.create_tag.outputs.tagname }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release for MacOS
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.YOURKEYSYOURCRYPTO }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./edck
+        asset_name: edck
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release for Windows
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.YOURKEYSYOURCRYPTO }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./edck.exe
+        asset_name: edck.exe
+        asset_content_type: application/octet-stream
